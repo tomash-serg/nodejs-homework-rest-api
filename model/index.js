@@ -1,5 +1,6 @@
 const fs = require('fs/promises')
 const path = require('path')
+const crypto = require('crypto')
 
 const contactPath = path.join(__dirname, 'contacts.json')
 
@@ -21,9 +22,10 @@ const removeContact = async (contactId) => {
 
 const addContact = async (body) => {
   const contacts = await listContacts()
-  contacts.push(body)
+  const contact = { ...body, id: crypto.randomInt(0, 1000) }
+  contacts.push(contact)
   fs.writeFile(contactPath, JSON.stringify(contacts), 'utf-8')
-  return contacts
+  return contact
 }
 
 const updateContact = async (contactId, body) => {
@@ -35,7 +37,8 @@ const updateContact = async (contactId, body) => {
       return el
     }
   })
-  return updatingContacts
+  fs.writeFile(contactPath, JSON.stringify(updatingContacts), 'utf-8')
+  return updatingContacts.filter(el => Number(el.id) === Number(contactId))
 }
 
 module.exports = {
