@@ -33,7 +33,6 @@ router.post('/', async (req, res, next) => {
   try {
     let { error } = contactsSchema.validate(req.body)
     if (error) {
-      // eslint-disable-next-line no-const-assign
       error = new Error(error.message)
       error.status = 400
       throw error
