@@ -1,45 +1,17 @@
-const fs = require('fs/promises')
-const path = require('path')
-const crypto = require('crypto')
+const { Contact } = require('./contactSchema')
 
-const contactPath = path.join(__dirname, 'contacts.json')
+const listContacts = async () => await Contact.find({}, '_id name email phone')
 
-const listContacts = async () => {
-  return JSON.parse(await fs.readFile(contactPath))
-}
+const getContactById = async ({ params }) =>
+  await Contact.findById(params.contactId, '_id name email phone')
 
-const getContactById = async (contactId) => {
-  const contacts = await listContacts()
-  return contacts.filter((el) => Number(el.id) === Number(contactId))
-}
+const removeContact = async ({ params }) =>
+  (await Contact.findByIdAndDelete(params.contactId)) && { message: 'contact deleted' }
 
-const removeContact = async (contactId) => {
-  const contacts = await listContacts()
-  const updatedContacts = contacts.filter((el) => Number(el.id) !== Number(contactId))
-  fs.writeFile(contactPath, JSON.stringify(updatedContacts), 'utf-8')
-  return updatedContacts
-}
+const addContact = async ({ body }) => await Contact.create(body)
 
-const addContact = async (body) => {
-  const contacts = await listContacts()
-  const contact = { ...body, id: crypto.randomInt(0, 1000) }
-  contacts.push(contact)
-  fs.writeFile(contactPath, JSON.stringify(contacts), 'utf-8')
-  return contact
-}
-
-const updateContact = async (contactId, body) => {
-  const contacts = await listContacts()
-  const updatingContacts = contacts.map(el => {
-    if (Number(el.id) === Number(contactId)) {
-      return { ...el, ...body }
-    } else {
-      return el
-    }
-  })
-  fs.writeFile(contactPath, JSON.stringify(updatingContacts), 'utf-8')
-  return updatingContacts.filter(el => Number(el.id) === Number(contactId))
-}
+const updateContact = async ({ params, body }) =>
+  await Contact.findByIdAndUpdate(params.contactId, body, { new: true })
 
 module.exports = {
   listContacts,
