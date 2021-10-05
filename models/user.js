@@ -15,14 +15,20 @@ const userSchema = new Mongoose.Schema(
       required: true,
       minlength: 4,
     },
+    token: {
+      type: String,
+      default: null,
+    },
   },
   { versionKey: false, timestamps: true }
 );
 
 userSchema.method({
-  set: function (pass) {
-    console.log(this);
+  setPass: function (pass) {
     this.password = bcrypt.hashSync(pass, bcrypt.genSaltSync(10));
+  },
+  setToken: function (token) {
+    this.token = token;
   },
   isValid: function (pass) {
     return bcrypt.compareSync(pass, this.password);
