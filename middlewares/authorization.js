@@ -3,15 +3,25 @@ const Errors = require("http-errors");
 
 const authorization = () => {
   return async (req, res, next) => {
-    const [bearer, userToken] = req.headers.authorization.split(" ");
+    if (!req.headers.authorization) {
+      try {
+        throw new Errors.Unauthorized("not authorization");
+      } catch (error) {
+        next(error);
+      }
+    }
+    const [bearer, userToken] = req?.headers?.authorization.split(" ");
     if (!bearer && !userToken) {
-      throw new Errors.Unauthorized("not authorization");
+      try {
+        throw new Errors.Unauthorized("not authorization");
+      } catch (error) {
+        next(error);
+      }
     }
     try {
       token.verify(userToken);
     } catch (error) {
-      console.log("=======>", userToken);
-      throw new Errors.Unauthorized("not authorization");
+      next(error);
     }
     next();
   };

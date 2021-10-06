@@ -1,5 +1,7 @@
 const Errors = require("http-errors");
-const { UserModel } = require("../models");
+const {
+  authModel: { UserModel },
+} = require("../models");
 const token = require("../utils");
 
 const signup = async (req, res) => {
@@ -11,7 +13,7 @@ const signup = async (req, res) => {
 
   const newUser = new UserModel({ email });
   newUser.setPass(password);
-  const userToken = token.get(newUser.email);
+  const userToken = token.get(newUser._id);
   newUser.setToken(userToken);
   await newUser.save();
 
@@ -39,7 +41,7 @@ const login = async (req, res) => {
     throw new Errors.Unauthorized("Wrong password");
   }
 
-  const userToken = token.get(user.email);
+  const userToken = token.get(user._id);
   await UserModel.findByIdAndUpdate(user._id, { token: userToken });
 
   res.status(200).json({
@@ -52,10 +54,13 @@ const login = async (req, res) => {
 };
 
 const logout = async (req, res) => {
-  //user id
-  await UserModel.findByIdAndUpdate(user._id, { token: "" });
+  const { userId } = req.params;
+  const user = await UserModel.findByIdAndUpdate(userId, { token: "" });
+  if (!user.token) {
+    throw new Errors.Unauthorized("not authorization");
+  }
   token.clear();
-  res.json("ok");
+  res.status(200).json({ email: user.email });
 };
 
 module.exports = { signup, login, logout };
