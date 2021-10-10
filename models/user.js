@@ -2,6 +2,7 @@ const Mongoose = require("mongoose");
 const Joi = require("joi");
 const bcrypt = require("bcryptjs");
 const validateEmailReg = require("./options");
+const gravatar = require("gravatar");
 
 const userSchema = new Mongoose.Schema(
   {
@@ -19,6 +20,10 @@ const userSchema = new Mongoose.Schema(
       type: String,
       default: null,
     },
+    avatarURL: {
+      type: String,
+      default: null,
+    },
   },
   { versionKey: false, timestamps: true }
 );
@@ -32,6 +37,9 @@ userSchema.method({
   },
   isValid: function (pass) {
     return bcrypt.compareSync(pass, this.password);
+  },
+  setAvatar: function (email) {
+    this.avatarURL = gravatar.url(email, { s: "200", r: "pg", d: "404" });
   },
 });
 

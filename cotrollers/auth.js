@@ -2,7 +2,7 @@ const Errors = require("http-errors");
 const {
   authModel: { UserModel },
 } = require("../models");
-const token = require("../utils");
+const { token } = require("../utils");
 
 const signup = async (req, res) => {
   const { email, password } = req.body;
@@ -13,6 +13,7 @@ const signup = async (req, res) => {
 
   const newUser = new UserModel({ email });
   newUser.setPass(password);
+  newUser.setAvatar(email);
   const userToken = token.get(newUser._id);
   newUser.setToken(userToken);
   await newUser.save();
@@ -23,6 +24,7 @@ const signup = async (req, res) => {
     user: {
       email: newUser.email,
       id: newUser._id,
+      avatarURL: newUser.avatarURL,
     },
   });
 };
@@ -49,6 +51,7 @@ const login = async (req, res) => {
     user: {
       email: user.email,
       id: user._id,
+      avatarURL: user.avatarURL,
     },
   });
 };
