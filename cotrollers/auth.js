@@ -2,7 +2,7 @@ const Errors = require("http-errors");
 const {
   authModel: { UserModel },
 } = require("../models");
-const { token } = require("../utils");
+const { token, msg } = require("../utils");
 
 const signup = async (req, res) => {
   const { email, password } = req.body;
@@ -14,9 +14,11 @@ const signup = async (req, res) => {
   const newUser = new UserModel({ email });
   newUser.setPass(password);
   newUser.setAvatar(email);
+  newUser.setVerifyToken();
   const userToken = token.get(newUser._id);
   newUser.setToken(userToken);
   await newUser.save();
+  msg({ email: newUser.email, token: newUser.verifyToken });
 
   res.status(201).json({
     message: "user created",
@@ -32,6 +34,10 @@ const signup = async (req, res) => {
 const login = async (req, res) => {
   const { email, password } = req.body;
   const user = await UserModel.findOne({ email });
+
+  if (!user.verifyToken) {
+    throw new Errors.NotFound("verify your account!");
+  }
 
   if (!user) {
     throw new Errors.NotFound("Email is not found");

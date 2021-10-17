@@ -3,6 +3,7 @@ const Joi = require("joi");
 const bcrypt = require("bcryptjs");
 const validateEmailReg = require("./options");
 const gravatar = require("gravatar");
+const Crypto = require("crypto");
 
 const userSchema = new Mongoose.Schema(
   {
@@ -24,6 +25,14 @@ const userSchema = new Mongoose.Schema(
       type: String,
       default: null,
     },
+    verify: {
+      type: Boolean,
+      default: false,
+    },
+    verifyToken: {
+      type: String,
+      required: true,
+    },
   },
   { versionKey: false, timestamps: true }
 );
@@ -40,6 +49,9 @@ userSchema.method({
   },
   setAvatar: function (email) {
     this.avatarURL = gravatar.url(email, { s: "200", r: "pg", d: "404" });
+  },
+  setVerifyToken: function () {
+    this.verifyToken = Crypto.randomInt(1234, 9999);
   },
 });
 
